@@ -58,4 +58,3 @@ Start with `GEO_PROVIDER_A_MODE=down` to force provider B. Set both geo modes to
 
 The local runtime is purposefully dependency-free and stores data in `data/platform.json`; the included migration is the PostgreSQL production schema. Rate-limit buckets are process-local, geo and notification providers are deterministic mocks, and demo login is not a full identity system. A production deployment should replace these with Postgres, Redis, real provider clients, an email/webhook worker, and managed authentication.
 
-See [DESIGN.md](DESIGN.md), [EVIDENCE.md](EVIDENCE.md), and [BUILDLOG.md](BUILDLOG.md) for the capstone submission pack.

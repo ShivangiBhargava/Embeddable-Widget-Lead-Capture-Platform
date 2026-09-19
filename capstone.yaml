@@ -1,0 +1,11 @@
+run: npm start
+seed: npm run seed
+test: npm test
+base_url: http://localhost:3000
+endpoints:
+  health: /health
+  login: /auth/login
+  widgets: /admin/widgets
+  public_config: /public/widgets/widget_welcome/config
+  public_submission: /public/submissions
+  dashboard: /admin/dashboard/stats

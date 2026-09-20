@@ -2,7 +2,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
-const file = () => path.resolve(process.env.DATA_FILE || './data/platform.json');
+// Serverless runtimes only permit writes beneath /tmp. Local runs retain the
+// project-relative data file, while a deployed demo starts with fresh sample data.
+const file = () => path.resolve(process.env.DATA_FILE || (process.env.VERCEL ? '/tmp/lead-platform.json' : './data/platform.json'));
 const now = () => new Date().toISOString();
 const id = (prefix) => `${prefix}_${crypto.randomUUID().replaceAll('-', '').slice(0, 18)}`;
 function blank() { return { schemaVersion: 1, tenants: [], users: [], widgets: [], submissions: [], idempotency: {}, jobs: [] }; }

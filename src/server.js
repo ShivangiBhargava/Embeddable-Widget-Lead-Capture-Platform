@@ -1,6 +1,7 @@
 const http = require('node:http'); const { URL } = require('node:url');
 const { seed, read, transaction } = require('./store'); const { verify, login } = require('./auth');
 const svc = require('./services');
+const landingPage = require('./ui');
 seed();
 function send(res, status, body, headers = {}) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', ...headers }); res.end(JSON.stringify(body)); }
 function publicHeaders(extra = {}) { return { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET, POST, OPTIONS', 'access-control-allow-headers': 'Content-Type, Idempotency-Key, X-Force-Side-Effect-Fail', 'access-control-max-age': '600', ...extra }; }
@@ -11,6 +12,7 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`); const path = url.pathname;
   if (req.method === 'OPTIONS') return send(res, 204, {}, publicHeaders());
   try {
+    if (req.method === 'GET' && path === '/') { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); return res.end(landingPage); }
     if (req.method === 'GET' && path === '/health') return send(res, 200, { status: 'ok' });
     if (req.method === 'POST' && path === '/auth/login') { const input = await body(req); const result = login(input.email, input.password); return result ? send(res, 200, result) : send(res, 401, { error: 'invalid credentials' }); }
     if (req.method === 'GET' && path === '/widget.v1.js') { const js = require('./widget-bundle'); res.writeHead(200, { 'content-type': 'application/javascript; charset=utf-8', 'cache-control': 'public, max-age=31536000, immutable', 'access-control-allow-origin': '*' }); return res.end(js); }

@@ -8,7 +8,7 @@ function publicHeaders(extra = {}) { return { 'access-control-allow-origin': '*'
 function body(req) { return new Promise((resolve, reject) => { let raw = ''; req.on('data', (chunk) => { raw += chunk; if (raw.length > svc.MAX_BODY) { const error = Error('too large'); error.code = 413; req.destroy(error); } }); req.on('end', () => { try { resolve(raw ? JSON.parse(raw) : {}); } catch { const error = Error('invalid JSON'); error.code = 400; reject(error); } }); req.on('error', reject); }); }
 function auth(req, res) { const claims = verify(req.headers.authorization); if (!claims) { send(res, 401, { error: 'authentication required' }); return null; } return claims; }
 function widgetView(widget) { const { tenantId, ...safe } = widget; return safe; }
-const server = http.createServer(async (req, res) => {
+async function handler(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`); const path = url.pathname;
   if (req.method === 'OPTIONS') return send(res, 204, {}, publicHeaders());
   try {
@@ -29,6 +29,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && path === '/admin/dashboard/stats') { const rows = read().submissions.filter((row) => row.tenantId === claims.tenantId); const byWidget = {}; const byCountry = {}; const byDay = {}; for (const row of rows) { byWidget[row.widgetId] = (byWidget[row.widgetId] || 0) + 1; if (row.geo?.country) byCountry[row.geo.country] = (byCountry[row.geo.country] || 0) + 1; const day = row.createdAt.slice(0, 10); byDay[day] = (byDay[day] || 0) + 1; } return send(res, 200, { total: rows.length, byWidget, byCountry, byDay }); }
     return send(res, 404, { error: 'not found' });
   } catch (error) { if (error.code === 413) return send(res, 413, { error: 'payload too large' }, publicHeaders()); if (error.code === 400) return send(res, 400, { error: 'invalid JSON' }, publicHeaders()); console.error('request failure', error.message); return send(res, 500, { error: 'internal server error' }, publicHeaders()); }
-});
+}
+const server = http.createServer(handler);
 if (require.main === module) server.listen(Number(process.env.PORT || 3000), () => console.log(`Lead platform listening on ${process.env.PORT || 3000}`));
-module.exports = { server };
+module.exports = { server, handler };

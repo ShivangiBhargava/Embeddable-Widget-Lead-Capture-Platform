@@ -1,4 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/$1" }],
-  "functions": { "api/[...path].js": { "maxDuration": 10 } }
+  "version": 2,
+  "builds": [
+    { "src": "api/[...path].js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/api/[...path].js" }
+  ]
 }
